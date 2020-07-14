@@ -1,0 +1,65 @@
+<!doctypehtml>
+<html>
+<body>
+  <p>Please Donate to EatBCH</p>
+  <p><button
+    class="wagerr-button"
+    data-to="bitcoincash:pp8skudq3x5hzw8ew7vzsw8tn4k8wxsqsv0lt0mf3g"
+    data-value="0.00001000"
+    data-paywall-id="paywall"
+    data-success-callback="wagerrCallback"
+  >
+    Tip 1000 Satoshis
+  </button></p>
+
+  <br/><br/>
+
+  <div id="paywall" style="display:none">
+    Thank you for Tipping!
+  </div>
+
+  <script>
+    function wagerrCallback(txid) {
+      alert(txid)
+    }
+
+    var wagerrButtons = document.body.getElementsByClassName("wagerr-button")
+
+    for (var i = 0; i < wagerrButtons.length; i++) {
+      var wagerrButton = wagerrButtons[i]
+      wagerrButton.addEventListener('click', function(event) {
+        if (typeof web4bch !== 'undefined') {
+          web4bch = new Web4Bch(web4bch.currentProvider)
+
+          var txParams = {
+            to: wagerrButton.getAttribute("data-to"),
+            from: web4bch.bch.defaultAccount,
+            value: wagerrButton.getAttribute("data-value")
+          }
+          web4bch.bch.sendTransaction(txParams, (err, res) => {
+            if (err) {
+              // console.log('send err', err)
+            } else {
+              // console.log('send success:', res)
+              var paywallId = wagerrButton.getAttribute("data-paywall-id")
+              if (paywallId) {
+                var paywall = document.getElementById("paywall")
+                paywall.style.display = "block"
+              }
+
+              var successCallback = wagerrButton.getAttribute("data-success-callback")
+              if (successCallback) {
+                window[successCallback](res)
+              }
+            }
+          })
+        } else {
+          window.open('https://wagerrwallet.cash')
+        }
+      })
+    }
+
+  </script>
+</body>
+
+</html>

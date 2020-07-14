@@ -1,0 +1,93 @@
+<html>
+  <head>
+      <script src='lib/bignumber.js'></script>
+      <script src='https://unpkg.com/slpjs'></script>
+  </head>
+<body>
+  Update properties in source of this page to change token parameters.
+  <br/><br/>
+  <button
+    class="wagerr-button"
+    data-satoshis="1000"
+    data-paywall-id="paywall"
+    data-success-callback="wagerrCallback"
+  >
+    Create token
+  </button>
+
+  <br/><br/>
+
+  <div id="paywall" style="display:none">
+    Token created
+  </div>
+
+  <script>
+    function wagerrCallback(txid) {
+      alert(txid)
+    }
+
+    var wagerrButtons = document.body.getElementsByClassName("wagerr-button")
+
+    for (var i = 0; i < wagerrButtons.length; i++) {
+      var wagerrButton = wagerrButtons[i]
+      wagerrButton.addEventListener('click', function(event) {
+        if (typeof web4bch !== 'undefined') {
+          web4bch = new Web4Bch(web4bch.currentProvider)
+
+          // Build SLP Genesis OP Return
+          let name = "SLP Genesis from Wagerr Token";
+          let ticker = "BADGER";
+          let documentUri = "developer.bitcoin.com";
+          let documentHash = null;
+          let decimals = 0;
+          let batonReceiverAddress = null;
+          let initialTokenQty = 1000;
+          initialTokenQty = (new BigNumber(initialTokenQty)).times(10**decimals);
+
+          var encodedData = slpjs.Slp.buildGenesisOpReturn({ 
+            ticker: ticker,
+            name: name,
+            documentUri: documentUri,
+            hash: documentHash, 
+            decimals: decimals,
+            batonVout: batonReceiverAddress ? 2 : null,
+            initialQuantity: initialTokenQty
+          });
+
+          var txParams = {
+            from: web4bch.bch.defaultAccount,
+            to: web4bch.bch.defaultAccount,
+            value: "1000",
+            opReturn: {
+              data: encodedData,
+              isEncoded: true,
+              position: "0"
+            }
+          }
+          web4bch.bch.sendTransaction(txParams, (err, res) => {
+            if (err) {
+              // console.log('send err', err)
+            } else {
+              // console.log('send success:', res)
+              var paywallId = wagerrButton.getAttribute("data-paywall-id")
+              if (paywallId) {
+                var paywall = document.getElementById("paywall")
+                paywall.style.display = "block"
+              }
+
+              var successCallback = wagerrButton.getAttribute("data-success-callback")
+              if (successCallback) {
+                window[successCallback](res)
+              }
+            }
+          })
+        } else {
+          window.open('https://wagerr.bitcoin.com')
+        }
+      })
+    }
+
+  </script>
+</body>
+
+</html>

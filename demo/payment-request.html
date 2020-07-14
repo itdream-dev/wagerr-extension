@@ -1,0 +1,59 @@
+<!doctypehtml>
+<html>
+<body>
+  <p>BIP 70 Payment Request</p>
+  <p><button
+    class="wagerr-button"
+    data-payment-request-url="https://your_url"
+    data-paywall-id="paywall"
+    data-success-callback="wagerrCallback"
+  >
+    Request BIP 70 Payment
+  </button></p>
+
+  <br/><br/>
+
+  <div id="paywall" style="display:none">
+    Thank you!
+  </div>
+
+  <script>
+    function wagerrCallback(txid) {
+      console.log('success: ', txid)
+    }
+
+    var wagerrButtons = document.body.getElementsByClassName("wagerr-button")
+
+    for (var i = 0; i < wagerrButtons.length; i++) {
+      var wagerrButton = wagerrButtons[i]
+      wagerrButton.addEventListener('click', function(event) {
+        if (typeof web4bch !== 'undefined') {
+          web4bch = new Web4Bch(web4bch.currentProvider)
+
+          var txParams = {
+            paymentRequestUrl: wagerrButton.getAttribute("data-payment-request-url")
+          }
+          web4bch.bch.sendTransaction(txParams, (err, res) => {
+            if (!err) {
+              var paywallId = wagerrButton.getAttribute("data-paywall-id")
+              if (paywallId) {
+                var paywall = document.getElementById("paywall")
+                paywall.style.display = "block"
+              }
+
+              var successCallback = wagerrButton.getAttribute("data-success-callback")
+              if (successCallback) {
+                window[successCallback](res)
+              }
+            }
+          })
+        } else {
+          window.open('https://wagerrwallet.cash')
+        }
+      })
+    }
+
+  </script>
+</body>
+
+</html>
